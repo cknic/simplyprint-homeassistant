@@ -1,4 +1,5 @@
 """Service registration for SimplyPrint."""
+
 from __future__ import annotations
 
 import logging
@@ -40,9 +41,7 @@ _CANCEL_SCHEMA = _PRINTER_SCHEMA.extend(
 
 _GCODE_SCHEMA = _PRINTER_SCHEMA.extend({vol.Required(ATTR_GCODE): cv.string})
 
-_QUEUE_SCHEMA = _PRINTER_SCHEMA.extend(
-    {vol.Required(ATTR_QUEUE_FILE): vol.Coerce(int)}
-)
+_QUEUE_SCHEMA = _PRINTER_SCHEMA.extend({vol.Required(ATTR_QUEUE_FILE): vol.Coerce(int)})
 
 
 def _resolve_client(hass: HomeAssistant, printer_id: int) -> SimplyPrintApiClient:
@@ -93,9 +92,7 @@ def async_register_services(hass: HomeAssistant) -> None:
     async def _send_gcode(call: ServiceCall) -> None:
         pid = int(call.data[ATTR_PRINTER_ID])
         gcode = call.data[ATTR_GCODE]
-        await _wrap(
-            "send_gcode", _resolve_client(hass, pid).send_gcode(pid, gcode)
-        )
+        await _wrap("send_gcode", _resolve_client(hass, pid).send_gcode(pid, gcode))
 
     async def _start_queued(call: ServiceCall) -> None:
         pid = int(call.data[ATTR_PRINTER_ID])
@@ -113,7 +110,9 @@ def async_register_services(hass: HomeAssistant) -> None:
         )
 
     hass.services.async_register(DOMAIN, SERVICE_PAUSE, _pause, schema=_PRINTER_SCHEMA)
-    hass.services.async_register(DOMAIN, SERVICE_RESUME, _resume, schema=_PRINTER_SCHEMA)
+    hass.services.async_register(
+        DOMAIN, SERVICE_RESUME, _resume, schema=_PRINTER_SCHEMA
+    )
     hass.services.async_register(DOMAIN, SERVICE_CANCEL, _cancel, schema=_CANCEL_SCHEMA)
     hass.services.async_register(
         DOMAIN, SERVICE_CLEAR_BED, _clear_bed, schema=_PRINTER_SCHEMA

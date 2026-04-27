@@ -1,4 +1,5 @@
 """Async aiohttp client for the SimplyPrint REST API."""
+
 from __future__ import annotations
 
 import asyncio
@@ -174,9 +175,7 @@ class SimplyPrintApiClient:
             return data[0] if data else None
         return data
 
-    async def get_printers_bulk(
-        self, printer_ids: list[int]
-    ) -> list[dict[str, Any]]:
+    async def get_printers_bulk(self, printer_ids: list[int]) -> list[dict[str, Any]]:
         """Fetch a known set of printers in one call (comma-separated pids)."""
         if not printer_ids:
             return []
@@ -194,14 +193,10 @@ class SimplyPrintApiClient:
     # ---------------------------------------------------------------- actions
 
     async def pause(self, printer_id: int) -> None:
-        await self._request(
-            "POST", API_ACTION_PAUSE, params={"pid": str(printer_id)}
-        )
+        await self._request("POST", API_ACTION_PAUSE, params={"pid": str(printer_id)})
 
     async def resume(self, printer_id: int) -> None:
-        await self._request(
-            "POST", API_ACTION_RESUME, params={"pid": str(printer_id)}
-        )
+        await self._request("POST", API_ACTION_RESUME, params={"pid": str(printer_id)})
 
     async def cancel(
         self,
@@ -281,6 +276,4 @@ class SimplyPrintApiClient:
         return payload.get("webhook") or {}
 
     async def delete_webhook(self, webhook_id: int) -> None:
-        await self._request(
-            "POST", API_WEBHOOKS_DELETE, json={"id": int(webhook_id)}
-        )
+        await self._request("POST", API_WEBHOOKS_DELETE, json={"id": int(webhook_id)})

@@ -4,6 +4,7 @@ SimplyPrint's public API does not expose a webcam URL, only a `hasCam` flag.
 Users supply a stream/snapshot URL per printer in the integration's options
 flow; we expose a camera entity for each printer that has one configured.
 """
+
 from __future__ import annotations
 
 import logging

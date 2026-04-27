@@ -1,4 +1,5 @@
 """Sensor platform for SimplyPrint."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -44,8 +45,8 @@ def _state_value(row: dict[str, Any]) -> str | None:
 
 
 def _hotend_actual(row: dict[str, Any]) -> float | None:
-    tools = ((row.get("printer") or {}).get("temps") or {}).get("current", {}).get(
-        "tool"
+    tools = (
+        ((row.get("printer") or {}).get("temps") or {}).get("current", {}).get("tool")
     )
     if isinstance(tools, list) and tools:
         return _to_float(tools[0])
@@ -53,8 +54,8 @@ def _hotend_actual(row: dict[str, Any]) -> float | None:
 
 
 def _hotend_target(row: dict[str, Any]) -> float | None:
-    tools = ((row.get("printer") or {}).get("temps") or {}).get("target", {}).get(
-        "tool"
+    tools = (
+        ((row.get("printer") or {}).get("temps") or {}).get("target", {}).get("tool")
     )
     if isinstance(tools, list) and tools:
         return _to_float(tools[0])

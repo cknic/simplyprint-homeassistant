@@ -8,6 +8,7 @@ We register the webhook with HA's `webhook` component so it's exposed at
 Note: webhook registration on SimplyPrint requires the Print Farm plan.
 If registration fails, callers should fall back to polling.
 """
+
 from __future__ import annotations
 
 import hmac
@@ -146,9 +147,7 @@ def _make_handler(runtime: "SimplyPrintRuntimeData", expected_secret: str):
     ) -> Response:
         provided = request.headers.get("X-SP-Secret")
         if provided is None or not hmac.compare_digest(provided, expected_secret):
-            _LOGGER.warning(
-                "Rejected SimplyPrint webhook with bad/missing X-SP-Secret"
-            )
+            _LOGGER.warning("Rejected SimplyPrint webhook with bad/missing X-SP-Secret")
             return Response(status=401)
 
         try:
@@ -180,5 +179,3 @@ def _make_handler(runtime: "SimplyPrintRuntimeData", expected_secret: str):
         return Response(status=200)
 
     return _handle
-
-

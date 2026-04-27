@@ -1,4 +1,5 @@
 """Config + options flow for SimplyPrint."""
+
 from __future__ import annotations
 
 import logging
@@ -108,9 +109,7 @@ class SimplyPrintConfigFlow(ConfigFlow, domain=DOMAIN):
                 },
             )
 
-        printer_choices = {
-            str(p["id"]): _printer_label(p) for p in self._printers
-        }
+        printer_choices = {str(p["id"]): _printer_label(p) for p in self._printers}
         all_ids = list(printer_choices)
         schema = vol.Schema(
             {
@@ -195,9 +194,7 @@ class SimplyPrintOptionsFlow(OptionsFlow):
     ) -> ConfigFlowResult:
         entry = self.config_entry
         printer_ids: list[int] = entry.data.get(CONF_PRINTER_IDS, [])
-        existing_cameras: dict[str, str] = (
-            entry.options.get(CONF_CAMERA_URLS) or {}
-        )
+        existing_cameras: dict[str, str] = entry.options.get(CONF_CAMERA_URLS) or {}
 
         if user_input is not None:
             cameras: dict[str, str] = {}
@@ -227,9 +224,7 @@ class SimplyPrintOptionsFlow(OptionsFlow):
             schema_dict[
                 vol.Optional(
                     f"camera_{pid}",
-                    description={
-                        "suggested_value": existing_cameras.get(str(pid), "")
-                    },
+                    description={"suggested_value": existing_cameras.get(str(pid), "")},
                 )
             ] = str
 

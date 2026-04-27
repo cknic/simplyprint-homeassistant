@@ -1,4 +1,5 @@
 """Shared entity base class for SimplyPrint."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -15,9 +16,7 @@ class SimplyPrintEntity(CoordinatorEntity[SimplyPrintCoordinator]):
 
     _attr_has_entity_name = True
 
-    def __init__(
-        self, coordinator: SimplyPrintCoordinator, printer_id: int
-    ) -> None:
+    def __init__(self, coordinator: SimplyPrintCoordinator, printer_id: int) -> None:
         super().__init__(coordinator)
         self._printer_id = printer_id
 

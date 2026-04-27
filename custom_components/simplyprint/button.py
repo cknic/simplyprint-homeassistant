@@ -1,4 +1,5 @@
 """Button platform for SimplyPrint (pause / resume / cancel / clear bed)."""
+
 from __future__ import annotations
 
 import logging

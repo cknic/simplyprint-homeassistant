@@ -1,10 +1,10 @@
 {
   "domain": "simplyprint",
   "name": "SimplyPrint",
+  "after_dependencies": ["stream"],
   "codeowners": ["@cknic"],
   "config_flow": true,
   "dependencies": ["webhook"],
-  "after_dependencies": ["stream"],
   "documentation": "https://github.com/cknic/simplyprint-homeassistant",
   "integration_type": "hub",
   "iot_class": "cloud_polling",

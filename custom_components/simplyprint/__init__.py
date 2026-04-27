@@ -1,4 +1,5 @@
 """SimplyPrint integration for Home Assistant."""
+
 from __future__ import annotations
 
 import logging
@@ -69,8 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await async_setup_webhook(hass, entry, runtime)
         except Exception as err:  # pylint: disable=broad-except
             _LOGGER.warning(
-                "Could not register SimplyPrint webhook (%s). "
-                "Falling back to polling.",
+                "Could not register SimplyPrint webhook (%s). Falling back to polling.",
                 err,
             )
 
