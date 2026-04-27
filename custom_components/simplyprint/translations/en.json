@@ -1,0 +1,134 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to SimplyPrint",
+        "description": "Find your numeric Company ID and create an API key at {panel_url}.",
+        "data": {
+          "company_id": "Company ID",
+          "api_key": "API key"
+        }
+      },
+      "select_printers": {
+        "title": "Pick printers to track",
+        "description": "{count} printer(s) found on this account.",
+        "data": {
+          "printer_ids": "Printers",
+          "use_webhooks": "Register a SimplyPrint webhook for real-time events (Print Farm plan only)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate SimplyPrint",
+        "data": {
+          "api_key": "API key"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid API key or company ID.",
+      "cannot_connect": "Could not reach SimplyPrint.",
+      "no_printers": "No printers found on this account."
+    },
+    "abort": {
+      "already_configured": "This SimplyPrint company is already configured.",
+      "reauth_successful": "API key updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SimplyPrint options",
+        "description": "Optionally set a webcam stream/snapshot URL for each printer (e.g. an OctoPrint, Mainsail, or Bambu MJPEG URL). SimplyPrint does not expose camera URLs directly via API.",
+        "data": {
+          "use_webhooks": "Real-time webhooks (Print Farm plan only)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "state": { "name": "State" },
+      "progress": { "name": "Progress" },
+      "time_remaining": { "name": "Time remaining" },
+      "eta": { "name": "ETA" },
+      "current_file": { "name": "Current file" },
+      "current_layer": { "name": "Current layer" },
+      "filament_used": { "name": "Filament used" },
+      "hotend_temp": { "name": "Hotend temperature" },
+      "hotend_target": { "name": "Hotend target" },
+      "bed_temp": { "name": "Bed temperature" },
+      "bed_target": { "name": "Bed target" }
+    },
+    "binary_sensor": {
+      "online": { "name": "Online" },
+      "printing": { "name": "Printing" },
+      "error": { "name": "Error" },
+      "awaiting_bed_clear": { "name": "Awaiting bed clear" },
+      "has_camera": { "name": "Has camera" }
+    },
+    "button": {
+      "pause": { "name": "Pause" },
+      "resume": { "name": "Resume" },
+      "cancel": { "name": "Cancel" },
+      "clear_bed": { "name": "Clear bed" }
+    },
+    "camera": {
+      "camera": { "name": "Camera" }
+    }
+  },
+  "services": {
+    "pause": {
+      "name": "Pause print",
+      "description": "Pause an in-progress print.",
+      "fields": {
+        "printer_id": { "name": "Printer ID", "description": "SimplyPrint numeric printer id." }
+      }
+    },
+    "resume": {
+      "name": "Resume print",
+      "description": "Resume a paused print.",
+      "fields": {
+        "printer_id": { "name": "Printer ID", "description": "SimplyPrint numeric printer id." }
+      }
+    },
+    "cancel": {
+      "name": "Cancel print",
+      "description": "Cancel an active or paused print.",
+      "fields": {
+        "printer_id": { "name": "Printer ID", "description": "SimplyPrint numeric printer id." },
+        "comment": { "name": "Comment", "description": "Optional cancel reason note." },
+        "return_to_queue": { "name": "Return to queue", "description": "Re-add the cancelled job to the queue." }
+      }
+    },
+    "clear_bed": {
+      "name": "Clear bed",
+      "description": "Mark the bed as cleared.",
+      "fields": {
+        "printer_id": { "name": "Printer ID", "description": "SimplyPrint numeric printer id." }
+      }
+    },
+    "send_gcode": {
+      "name": "Send G-code",
+      "description": "Send raw G-code to a printer.",
+      "fields": {
+        "printer_id": { "name": "Printer ID", "description": "SimplyPrint numeric printer id." },
+        "gcode": { "name": "G-code", "description": "Lines of G-code, separated by newlines." }
+      }
+    },
+    "start_queued_job": {
+      "name": "Start queued job",
+      "description": "Start a specific queue item on a printer.",
+      "fields": {
+        "printer_id": { "name": "Printer ID", "description": "SimplyPrint numeric printer id." },
+        "queue_file": { "name": "Queue file ID", "description": "SimplyPrint queue item id." }
+      }
+    },
+    "start_next_queue_item": {
+      "name": "Start next queue item",
+      "description": "Pull the next matching item from the queue and start it (Print Farm plan).",
+      "fields": {
+        "printer_id": { "name": "Printer ID", "description": "SimplyPrint numeric printer id." }
+      }
+    }
+  }
+}

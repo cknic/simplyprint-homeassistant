@@ -1,0 +1,123 @@
+pause:
+  name: Pause print
+  description: Pause an in-progress print on a SimplyPrint printer.
+  fields:
+    printer_id:
+      name: Printer ID
+      description: SimplyPrint numeric printer id.
+      required: true
+      example: 1234
+      selector:
+        number:
+          mode: box
+          min: 1
+
+resume:
+  name: Resume print
+  description: Resume a paused print on a SimplyPrint printer.
+  fields:
+    printer_id:
+      name: Printer ID
+      description: SimplyPrint numeric printer id.
+      required: true
+      example: 1234
+      selector:
+        number:
+          mode: box
+          min: 1
+
+cancel:
+  name: Cancel print
+  description: Cancel an active or paused print.
+  fields:
+    printer_id:
+      name: Printer ID
+      required: true
+      example: 1234
+      selector:
+        number:
+          mode: box
+          min: 1
+    comment:
+      name: Comment
+      description: Optional cancel reason note.
+      required: false
+      example: Failed first layer
+      selector:
+        text:
+    return_to_queue:
+      name: Return to queue
+      description: Re-add the cancelled job to the print queue.
+      required: false
+      default: false
+      selector:
+        boolean:
+
+clear_bed:
+  name: Clear bed
+  description: Mark the printer bed as cleared after a finished print.
+  fields:
+    printer_id:
+      name: Printer ID
+      required: true
+      example: 1234
+      selector:
+        number:
+          mode: box
+          min: 1
+
+send_gcode:
+  name: Send G-code
+  description: Send raw G-code to a printer (must be in operational state).
+  fields:
+    printer_id:
+      name: Printer ID
+      required: true
+      example: 1234
+      selector:
+        number:
+          mode: box
+          min: 1
+    gcode:
+      name: G-code
+      description: Lines of G-code to send (separate by newline).
+      required: true
+      example: M104 S210
+      selector:
+        text:
+          multiline: true
+
+start_queued_job:
+  name: Start queued job
+  description: Start a specific queue item on a printer.
+  fields:
+    printer_id:
+      name: Printer ID
+      required: true
+      example: 1234
+      selector:
+        number:
+          mode: box
+          min: 1
+    queue_file:
+      name: Queue file ID
+      description: SimplyPrint queue item id.
+      required: true
+      example: 638
+      selector:
+        number:
+          mode: box
+          min: 1
+
+start_next_queue_item:
+  name: Start next queue item
+  description: Pull the next matching item from the queue and start it (Print Farm plan).
+  fields:
+    printer_id:
+      name: Printer ID
+      required: true
+      example: 1234
+      selector:
+        number:
+          mode: box
+          min: 1
