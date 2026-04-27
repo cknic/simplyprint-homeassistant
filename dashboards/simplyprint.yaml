@@ -1,0 +1,401 @@
+# SimplyPrint dashboard for Home Assistant
+# ----------------------------------------
+# Drop-in dashboard built around the SimplyPrint integration.
+# Uses the new Sections layout (HA 2024.7+).
+#
+# Required HACS Frontend cards:
+#   - Mushroom            (HACS Frontend -> "Mushroom" by piitaya)
+#   - Mini Graph Card     (HACS Frontend -> "mini-graph-card" by kalkih)
+#   - Bar Card            (HACS Frontend -> "bar-card" by custom-cards)
+#
+# How to use:
+#   1. Settings -> Dashboards -> Add Dashboard -> "New dashboard from scratch"
+#   2. Open the new dashboard, click ⋮ -> "Edit dashboard" -> ⋮ -> "Raw configuration editor"
+#   3. Paste this entire file. Save.
+#   4. Find/replace the printer slug `printer1` (and `printer2` if you have a second printer)
+#      with your real printer's entity-id slug. To find your slug: Developer Tools -> States ->
+#      filter on "simplyprint" -> look at any sensor like `sensor.workshop_printer_state`. The
+#      slug is the bit between `sensor.` and `_state` (here: `workshop_printer`).
+#   5. If you have only one printer, delete the second `# === DETAIL: printer2 === ... # === END
+#      printer2 ===` block and remove that printer from the chips section at the top.
+#
+# All entity IDs follow this pattern (where <slug> = printer name slug, lowercased):
+#   sensor.<slug>_state               sensor.<slug>_hotend_temperature
+#   sensor.<slug>_progress            sensor.<slug>_hotend_target
+#   sensor.<slug>_time_remaining      sensor.<slug>_bed_temperature
+#   sensor.<slug>_eta                 sensor.<slug>_bed_target
+#   sensor.<slug>_current_file        binary_sensor.<slug>_online
+#   sensor.<slug>_current_layer       binary_sensor.<slug>_printing
+#   sensor.<slug>_filament_used       binary_sensor.<slug>_error
+#   button.<slug>_pause               binary_sensor.<slug>_awaiting_bed_clear
+#   button.<slug>_resume              camera.<slug>_camera   (optional)
+#   button.<slug>_cancel
+#   button.<slug>_clear_bed
+
+title: SimplyPrint
+views:
+  - title: Printers
+    path: printers
+    icon: mdi:printer-3d
+    type: sections
+    max_columns: 3
+    sections:
+      # ───────────────────────────────────────────────────────────────────
+      # OVERVIEW — one chip per printer, color-coded by state
+      # ───────────────────────────────────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: 3D Printers
+            heading_style: title
+            icon: mdi:printer-3d
+          - type: custom:mushroom-chips-card
+            alignment: start
+            chips:
+              - type: template
+                entity: sensor.printer1_state
+                icon: mdi:printer-3d
+                content: >-
+                  {% set s = states('sensor.printer1_state') %}
+                  {% set p = states('sensor.printer1_progress') %}
+                  {% set name = state_attr('sensor.printer1_state','friendly_name') | default('Printer 1') | replace(' State','') %}
+                  {{ name }} • {{ s | replace('_',' ') | title }}{% if p not in ['unknown','unavailable','none'] %} • {{ p | round(0) }}%{% endif %}
+                icon_color: >-
+                  {% set s = states('sensor.printer1_state') %}
+                  {% if s == 'printing' %}green
+                  {% elif s == 'paused' %}orange
+                  {% elif s == 'error' %}red
+                  {% elif s == 'offline' %}disabled
+                  {% elif s == 'operational' %}blue
+                  {% else %}grey{% endif %}
+                tap_action:
+                  action: none
+              # Add another chip for printer2 here, copy/paste/swap.
+              - type: template
+                entity: sensor.printer2_state
+                icon: mdi:printer-3d
+                content: >-
+                  {% set s = states('sensor.printer2_state') %}
+                  {% set p = states('sensor.printer2_progress') %}
+                  {% set name = state_attr('sensor.printer2_state','friendly_name') | default('Printer 2') | replace(' State','') %}
+                  {{ name }} • {{ s | replace('_',' ') | title }}{% if p not in ['unknown','unavailable','none'] %} • {{ p | round(0) }}%{% endif %}
+                icon_color: >-
+                  {% set s = states('sensor.printer2_state') %}
+                  {% if s == 'printing' %}green
+                  {% elif s == 'paused' %}orange
+                  {% elif s == 'error' %}red
+                  {% elif s == 'offline' %}disabled
+                  {% elif s == 'operational' %}blue
+                  {% else %}grey{% endif %}
+                tap_action:
+                  action: none
+
+      # ───────────────────────────────────────────────────────────────────
+      # === DETAIL: printer1 ===
+      # ───────────────────────────────────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: >-
+              {{ state_attr('sensor.printer1_state','friendly_name') | default('Printer 1') | replace(' State','') }}
+            heading_style: title
+            icon: mdi:printer-3d-nozzle
+
+          # Webcam (optional — delete this card if you didn't configure a camera URL)
+          - type: picture-entity
+            entity: camera.printer1_camera
+            camera_view: live
+            show_state: false
+            show_name: false
+            aspect_ratio: 16x9
+
+          # Big progress bar
+          - type: custom:bar-card
+            entities:
+              - entity: sensor.printer1_progress
+                name: Print progress
+            positions:
+              icon: 'off'
+              indicator: inside
+              name: inside
+              value: inside
+            height: 32px
+            min: 0
+            max: 100
+            severity:
+              - color: '#3399ff'
+                from: 0
+                to: 5
+              - color: '#2fc48d'
+                from: 5
+                to: 100
+            unit_of_measurement: '%'
+
+          # File / layer / ETA tile
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% set f = states('sensor.printer1_current_file') %}
+              {{ f if f not in ['unknown','unavailable','none',''] else 'No active job' }}
+            secondary: >-
+              {% set l = states('sensor.printer1_current_layer') %}
+              {% set eta_raw = states('sensor.printer1_eta') %}
+              {% set tr = states('sensor.printer1_time_remaining') %}
+              {% set parts = [] %}
+              {% if l not in ['unknown','unavailable','none'] %}{% set parts = parts + ['Layer ' ~ l] %}{% endif %}
+              {% if eta_raw not in ['unknown','unavailable','none'] %}
+                {% set parts = parts + ['ETA ' ~ as_timestamp(eta_raw) | timestamp_custom('%H:%M', true)] %}
+              {% endif %}
+              {% if tr not in ['unknown','unavailable','none'] and tr | int(0) > 0 %}
+                {% set h = (tr | int) // 3600 %}{% set m = ((tr | int) % 3600) // 60 %}
+                {% set parts = parts + [(h ~ 'h ' if h else '') ~ m ~ 'm left'] %}
+              {% endif %}
+              {{ parts | join(' • ') if parts else 'Idle' }}
+            icon: mdi:file-document-outline
+            icon_color: blue
+            multiline_secondary: true
+
+          # Temps row
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: 'Hotend'
+                secondary: >-
+                  {% set a = states('sensor.printer1_hotend_temperature') %}
+                  {% set t = states('sensor.printer1_hotend_target') %}
+                  {{ '%.0f' % (a | float(0)) }}°C
+                  {% if t | float(0) > 0 %}/ {{ '%.0f' % (t | float(0)) }}°C{% endif %}
+                icon: mdi:printer-3d-nozzle-heat
+                icon_color: >-
+                  {% set t = states('sensor.printer1_hotend_target') | float(0) %}
+                  {% set a = states('sensor.printer1_hotend_temperature') | float(0) %}
+                  {% if t > 0 and a > 35 %}red{% else %}grey{% endif %}
+              - type: custom:mushroom-template-card
+                primary: 'Bed'
+                secondary: >-
+                  {% set a = states('sensor.printer1_bed_temperature') %}
+                  {% set t = states('sensor.printer1_bed_target') %}
+                  {{ '%.0f' % (a | float(0)) }}°C
+                  {% if t | float(0) > 0 %}/ {{ '%.0f' % (t | float(0)) }}°C{% endif %}
+                icon: mdi:radiator
+                icon_color: >-
+                  {% set t = states('sensor.printer1_bed_target') | float(0) %}
+                  {% set a = states('sensor.printer1_bed_temperature') | float(0) %}
+                  {% if t > 0 and a > 30 %}orange{% else %}grey{% endif %}
+
+          # Temperature history graph
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.printer1_hotend_temperature
+                name: Hotend
+                color: '#e63946'
+              - entity: sensor.printer1_hotend_target
+                name: Hotend target
+                color: '#e63946'
+                show_line: false
+                show_points: false
+                show_legend: false
+                y_axis: secondary
+              - entity: sensor.printer1_bed_temperature
+                name: Bed
+                color: '#f4a261'
+              - entity: sensor.printer1_bed_target
+                name: Bed target
+                color: '#f4a261'
+                show_line: false
+                show_points: false
+                show_legend: false
+                y_axis: secondary
+            hours_to_show: 6
+            points_per_hour: 30
+            line_width: 2
+            smoothing: true
+            show:
+              fill: fade
+              labels: true
+              extrema: false
+
+          # Print control buttons
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: button.printer1_pause
+                name: Pause
+                icon: mdi:pause
+                icon_color: orange
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+              - type: custom:mushroom-entity-card
+                entity: button.printer1_resume
+                name: Resume
+                icon: mdi:play
+                icon_color: green
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+              - type: custom:mushroom-entity-card
+                entity: button.printer1_cancel
+                name: Cancel
+                icon: mdi:stop
+                icon_color: red
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+              - type: custom:mushroom-entity-card
+                entity: button.printer1_clear_bed
+                name: Clear bed
+                icon: mdi:broom
+                icon_color: blue
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+      # === END printer1 ===
+
+      # ───────────────────────────────────────────────────────────────────
+      # === DETAIL: printer2 === (delete this whole grid if you have only one printer)
+      # ───────────────────────────────────────────────────────────────────
+      - type: grid
+        cards:
+          - type: heading
+            heading: >-
+              {{ state_attr('sensor.printer2_state','friendly_name') | default('Printer 2') | replace(' State','') }}
+            heading_style: title
+            icon: mdi:printer-3d-nozzle
+
+          - type: picture-entity
+            entity: camera.printer2_camera
+            camera_view: live
+            show_state: false
+            show_name: false
+            aspect_ratio: 16x9
+
+          - type: custom:bar-card
+            entities:
+              - entity: sensor.printer2_progress
+                name: Print progress
+            positions:
+              icon: 'off'
+              indicator: inside
+              name: inside
+              value: inside
+            height: 32px
+            min: 0
+            max: 100
+            severity:
+              - color: '#3399ff'
+                from: 0
+                to: 5
+              - color: '#2fc48d'
+                from: 5
+                to: 100
+            unit_of_measurement: '%'
+
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% set f = states('sensor.printer2_current_file') %}
+              {{ f if f not in ['unknown','unavailable','none',''] else 'No active job' }}
+            secondary: >-
+              {% set l = states('sensor.printer2_current_layer') %}
+              {% set eta_raw = states('sensor.printer2_eta') %}
+              {% set tr = states('sensor.printer2_time_remaining') %}
+              {% set parts = [] %}
+              {% if l not in ['unknown','unavailable','none'] %}{% set parts = parts + ['Layer ' ~ l] %}{% endif %}
+              {% if eta_raw not in ['unknown','unavailable','none'] %}
+                {% set parts = parts + ['ETA ' ~ as_timestamp(eta_raw) | timestamp_custom('%H:%M', true)] %}
+              {% endif %}
+              {% if tr not in ['unknown','unavailable','none'] and tr | int(0) > 0 %}
+                {% set h = (tr | int) // 3600 %}{% set m = ((tr | int) % 3600) // 60 %}
+                {% set parts = parts + [(h ~ 'h ' if h else '') ~ m ~ 'm left'] %}
+              {% endif %}
+              {{ parts | join(' • ') if parts else 'Idle' }}
+            icon: mdi:file-document-outline
+            icon_color: blue
+            multiline_secondary: true
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-template-card
+                primary: 'Hotend'
+                secondary: >-
+                  {% set a = states('sensor.printer2_hotend_temperature') %}
+                  {% set t = states('sensor.printer2_hotend_target') %}
+                  {{ '%.0f' % (a | float(0)) }}°C
+                  {% if t | float(0) > 0 %}/ {{ '%.0f' % (t | float(0)) }}°C{% endif %}
+                icon: mdi:printer-3d-nozzle-heat
+                icon_color: >-
+                  {% set t = states('sensor.printer2_hotend_target') | float(0) %}
+                  {% set a = states('sensor.printer2_hotend_temperature') | float(0) %}
+                  {% if t > 0 and a > 35 %}red{% else %}grey{% endif %}
+              - type: custom:mushroom-template-card
+                primary: 'Bed'
+                secondary: >-
+                  {% set a = states('sensor.printer2_bed_temperature') %}
+                  {% set t = states('sensor.printer2_bed_target') %}
+                  {{ '%.0f' % (a | float(0)) }}°C
+                  {% if t | float(0) > 0 %}/ {{ '%.0f' % (t | float(0)) }}°C{% endif %}
+                icon: mdi:radiator
+                icon_color: >-
+                  {% set t = states('sensor.printer2_bed_target') | float(0) %}
+                  {% set a = states('sensor.printer2_bed_temperature') | float(0) %}
+                  {% if t > 0 and a > 30 %}orange{% else %}grey{% endif %}
+
+          - type: custom:mini-graph-card
+            name: Temperature
+            entities:
+              - entity: sensor.printer2_hotend_temperature
+                name: Hotend
+                color: '#e63946'
+              - entity: sensor.printer2_hotend_target
+                name: Hotend target
+                color: '#e63946'
+                show_line: false
+                show_points: false
+                show_legend: false
+                y_axis: secondary
+              - entity: sensor.printer2_bed_temperature
+                name: Bed
+                color: '#f4a261'
+              - entity: sensor.printer2_bed_target
+                name: Bed target
+                color: '#f4a261'
+                show_line: false
+                show_points: false
+                show_legend: false
+                y_axis: secondary
+            hours_to_show: 6
+            points_per_hour: 30
+            line_width: 2
+            smoothing: true
+            show:
+              fill: fade
+              labels: true
+              extrema: false
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:mushroom-entity-card
+                entity: button.printer2_pause
+                name: Pause
+                icon: mdi:pause
+                icon_color: orange
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+              - type: custom:mushroom-entity-card
+                entity: button.printer2_resume
+                name: Resume
+                icon: mdi:play
+                icon_color: green
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+              - type: custom:mushroom-entity-card
+                entity: button.printer2_cancel
+                name: Cancel
+                icon: mdi:stop
+                icon_color: red
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+              - type: custom:mushroom-entity-card
+                entity: button.printer2_clear_bed
+                name: Clear bed
+                icon: mdi:broom
+                icon_color: blue
+                tap_action: { action: toggle }
+                hold_action: { action: more-info }
+      # === END printer2 ===

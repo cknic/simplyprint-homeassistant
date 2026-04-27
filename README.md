@@ -41,6 +41,26 @@ Then choose which printers to track from the list. After setup, the **Configure*
 - Paste a webcam stream URL per printer (e.g. `http://octopi.local/webcam/?action=stream`)
 - Toggle real-time webhooks (requires SimplyPrint Print Farm plan; falls back to polling otherwise)
 
+## Pre-built dashboard
+
+A polished Mushroom-based dashboard YAML lives at [`dashboards/simplyprint.yaml`](./dashboards/simplyprint.yaml). It gives you per-printer cards with a live progress bar, hotend & bed temperature tiles, a temperature-history graph, the print-control buttons, and an at-a-glance overview row across all your printers.
+
+**Required HACS frontend cards** (HACS → Frontend → search & install each):
+
+- [Mushroom](https://github.com/piitaya/lovelace-mushroom) by piitaya
+- [mini-graph-card](https://github.com/kalkih/mini-graph-card) by kalkih
+- [bar-card](https://github.com/custom-cards/bar-card) by custom-cards
+
+**Install the dashboard:**
+
+1. Settings → Dashboards → **Add Dashboard** → "New dashboard from scratch"
+2. Open the new dashboard → ⋮ → **Edit dashboard** → ⋮ → **Raw configuration editor**
+3. Paste the contents of [`dashboards/simplyprint.yaml`](./dashboards/simplyprint.yaml)
+4. Find/replace the placeholder slug `printer1` with your printer's real entity slug (find it under *Developer Tools → States* — e.g. `sensor.workshop_printer_state` → slug is `workshop_printer`). If you have a second printer, do the same for `printer2`; otherwise delete the second `# === DETAIL: printer2 ===` block and its chip.
+5. Save.
+
+If you didn't configure a webcam URL, delete the `picture-entity` card inside each printer block.
+
 ## Polling cadence
 
 - Default: 30 s
